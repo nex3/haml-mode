@@ -102,7 +102,7 @@ The line containing RE is matched, as well as all lines indented beneath it."
     (haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
     (haml-highlight-ruby-script           1 font-lock-preprocessor-face)
     ("^!!!.*"                             0 font-lock-constant-face)
-    ("| *$"                               0 font-lock-string-face)))
+    ("\\s| *$"                            0 font-lock-string-face)))
 
 (defconst haml-filter-re "^[ \t]*:\\w+")
 (defconst haml-comment-re "^[ \t]*\\(?:-\\#\\|/\\)")
