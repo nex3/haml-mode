@@ -416,7 +416,8 @@ With ARG, do it that many times."
   (set (make-local-variable 'indent-region-function) 'haml-indent-region)
   (set (make-local-variable 'parse-sexp-lookup-properties) t)
   (set (make-local-variable 'comment-start) "-#")
-  (setq font-lock-defaults '((haml-font-lock-keywords) t t)))
+  (setq font-lock-defaults '((haml-font-lock-keywords) t t))
+  (setq indent-tabs-mode nil))
 
 ;; Useful functions
 
