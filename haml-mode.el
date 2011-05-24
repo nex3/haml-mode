@@ -20,6 +20,16 @@
 ;; your .emacs file:
 ;;
 ;; (require 'haml-mode)
+;;
+;; Hitting the key sequence `C-c C-o C-s` turns on (toggles) the
+;; compile-on-save minor mode in `haml-mode`.  To automatically enable
+;; it if there is already a .html file of the same base name beside:
+;;
+;; (add-hook 'haml-mode-hook '(lambda ()
+;;                              (and (file-exists-p (buffer-file-name))
+;;                                   (file-exists-p (haml-compiled-file-name))
+;;                                   (haml-cos-mode t))))
+;;
 
 ;;; Code:
 
@@ -50,6 +60,11 @@
 (defcustom haml-indent-offset 2
   "Amount of offset per level of indentation."
   :type 'integer
+  :group 'haml)
+
+(defcustom haml-command "haml"
+  "The haml command used for compiling Haml."
+  :type 'string
   :group 'haml)
 
 (defcustom haml-backspace-backdents-nesting t
@@ -483,6 +498,8 @@ changes in the initial region."
     (define-key map "\C-c\C-k" 'haml-kill-line-and-indent)
     (define-key map "\C-c\C-r" 'haml-output-region)
     (define-key map "\C-c\C-l" 'haml-output-buffer)
+    (define-key map "\C-c\C-c" 'haml-compile)
+    (define-key map "\C-c\C-o\C-s" 'haml-cos-mode)
     map))
 
 (defalias 'haml-parent-mode
@@ -542,7 +559,7 @@ Called from a program, START and END specify the region to indent."
     (let ((ci (current-indentation)))
       (while (re-search-forward "^ +" end t)
         (replace-match (make-string (- (current-indentation) ci) ? ))))
-    (shell-command-on-region start end "haml" "haml-output" t)))
+    (shell-command-on-region start end haml-command "haml-output" t)))
 
 (defun haml-output-region (start end)
   "Displays the HTML output for the current block of Haml code.
@@ -552,7 +569,7 @@ Called from a program, START and END specify the region to indent."
   (with-temp-buffer
     (yank)
     (haml-indent-region (point-min) (point-max))
-    (shell-command-on-region (point-min) (point-max) "haml" "haml-output")))
+    (shell-command-on-region (point-min) (point-max) haml-command "haml-output")))
 
 (defun haml-output-buffer ()
   "Displays the HTML output for entire buffer."
@@ -852,6 +869,39 @@ the current line."
 (defun haml-indent-string ()
   "Return the indentation string for `haml-indent-offset'."
   (mapconcat 'identity (make-list haml-indent-offset " ") ""))
+
+(defun haml-compile ()
+  "Compile the current buffer, haml filename.haml filename.html"
+  (interactive)
+  (shell-command
+   (mapconcat 'shell-quote-argument
+              (list haml-command (buffer-file-name) (haml-compiled-file-name))
+              " ")))
+
+(defun haml-compiled-file-name (&optional filename)
+  "Returns the name of the HTML file compiled from a Haml file.
+If FILENAME is omitted, the current buffer's file name is used."
+  (let ((filename (or filename (buffer-file-name))))
+    (concat (if (string= ".haml" (file-name-extension filename t))
+                (file-name-sans-extension filename)
+              filename) ".html")))
+
+(defun haml-compile-if-haml ()
+  "Compile the current buffer if the file name is *.haml."
+  (if (string-match ".+\\.haml$" buffer-file-name)
+      (haml-compile)))
+
+(defvar haml-cos-mode-line " CoS")
+(make-variable-buffer-local 'haml-cos-mode-line)
+
+(define-minor-mode haml-cos-mode
+  "Toggle compile-on-save for haml-mode."
+  :group 'haml :lighter haml-cos-mode-line
+  (cond
+   (haml-cos-mode
+    (add-hook 'after-save-hook 'haml-compile-if-haml nil t))
+   (t
+    (remove-hook 'after-save-hook 'haml-compile-if-haml t))))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.haml\\'" . haml-mode))
