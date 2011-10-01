@@ -721,6 +721,7 @@ the current line."
   (interactive "*p")
   (if (or (/= (current-indentation) (current-column))
           (bolp)
+          (eobp)
           (looking-at "^[ \t]+$"))
       (backward-delete-char arg)
     (save-excursion
