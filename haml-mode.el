@@ -766,7 +766,7 @@ the current line."
   (mapconcat 'identity (make-list haml-indent-offset " ") ""))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.haml$" . haml-mode))
+(add-to-list 'auto-mode-alist '("\\.haml\\'" . haml-mode))
 
 
 ;; Local Variables:
