@@ -187,6 +187,8 @@ elsewhere."
                           (and (featurep 'javascript-mode) javascript-mode-syntax-table)))
         (syntax-propertize (and (featurep 'js) 'js-syntax-propertize)))
     (when keywords
+      (when (and (fboundp 'js--update-quick-match-re) (null js--quick-match-re-func))
+        (js--update-quick-match-re))
       (haml-fontify-filter-region "javascript" limit keywords syntax-table nil syntax-propertize))))
 
 (defun haml-highlight-textile-filter-block (limit)
