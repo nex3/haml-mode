@@ -721,15 +721,18 @@ the current line."
   (interactive "*p")
   (if (or (/= (current-indentation) (current-column))
           (bolp)
-          (looking-at "^[ \t]+$"))
+          (save-excursion
+            (beginning-of-line)
+            (looking-at "^[ \t]+$")))
       (backward-delete-char arg)
     (save-excursion
-      (let ((ci (current-column)))
-        (beginning-of-line)
-        (if haml-backspace-backdents-nesting
-            (haml-mark-sexp-but-not-next-line)
-          (set-mark (save-excursion (end-of-line) (point))))
-        (haml-reindent-region-by (* (- arg) haml-indent-offset))
+      (beginning-of-line)
+      (unwind-protect
+          (progn
+            (if haml-backspace-backdents-nesting
+                (haml-mark-sexp-but-not-next-line)
+              (set-mark (save-excursion (end-of-line) (point))))
+            (haml-reindent-region-by (* (- arg) haml-indent-offset)))
         (pop-mark)))
     (back-to-indentation)))
 
