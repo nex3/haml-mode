@@ -137,8 +137,8 @@ respectively."
                        ruby-font-lock-syntax-table
                        (when (boundp 'ruby-font-lock-syntactic-keywords)
                          ruby-font-lock-syntactic-keywords)
-                       (when (boundp 'ruby-syntax-propertize-function)
-                         ruby-syntax-propertize-function)))
+                       (when (fboundp 'ruby-syntax-propertize-function)
+                         #'ruby-syntax-propertize-function)))
 
 (defun haml-handle-filter (filter-name limit fn)
   "If a FILTER-NAME filter is found within LIMIT, run FN on that filter.
