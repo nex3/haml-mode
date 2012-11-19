@@ -768,6 +768,12 @@ the current line."
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.haml$" . haml-mode))
 
-;; Setup/Activation
+
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not cl-functions)
+;; eval: (checkdoc-minor-mode 1)
+;; End:
+
 (provide 'haml-mode)
 ;;; haml-mode.el ends here
