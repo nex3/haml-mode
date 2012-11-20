@@ -126,28 +126,15 @@ respectively."
             font-lock-keywords-only
             font-lock-extend-region-functions
             font-lock-keywords-case-fold-search)
+        (setq syntax-ppss-last (cons beg (syntax-ppss beg)))
         ;; font-lock-fontify-region apparently isn't inclusive,
         ;; so we have to move the beginning back one char
         (font-lock-fontify-region (- beg 1) end)))))
 
-(defvar haml-commentless-ruby-syntax-table
-  (let ((table (make-syntax-table ruby-font-lock-syntax-table)))
-    (modify-syntax-entry ?# "." table)
-    table)
-  "A version of `ruby-font-lock-syntax-table' with the comment entry removed.
-This is used for ruby regions on lines beginning with '#'.")
-
 (defun haml-fontify-region-as-ruby (beg end)
   "Use Ruby's font-lock variables to fontify the region between BEG and END."
   (haml-fontify-region beg end ruby-font-lock-keywords
-                       (if (save-excursion
-                             (goto-char beg)
-                             (beginning-of-line)
-                             (and (< (point) beg)
-                                  (string-match-p "^[ \t]*#"
-                                                  (buffer-substring-no-properties (point) beg))))
-                           haml-commentless-ruby-syntax-table
-                         ruby-font-lock-syntax-table)
+                       ruby-font-lock-syntax-table
                        (when (boundp 'ruby-font-lock-syntactic-keywords)
                          ruby-font-lock-syntactic-keywords)
                        (when (fboundp 'ruby-syntax-propertize-function)
