@@ -511,7 +511,8 @@ lines nested beneath it."
               while (and (not (eobp))
                          (not (bobp))
                          (> (current-indentation) indent)))
-        (back-to-indentation)
+        (unless (eobp)
+          (back-to-indentation))
         (setq arg (+ arg (if (> arg 0) -1 1)))))))
 
 (defun haml-backward-sexp (&optional arg)
@@ -565,8 +566,9 @@ the first non-whitespace character of the next line."
   (set-mark
    (save-excursion
      (goto-char (mark))
-     (forward-line -1)
-     (end-of-line)
+     (unless (eobp)
+       (forward-line -1)
+       (end-of-line))
      (point))))
 
 ;; Indentation and electric keys
