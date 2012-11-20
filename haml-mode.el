@@ -230,10 +230,16 @@ This requires that `markdown-mode' be available."
                                   nil
                                   nil)))
 
+(defconst haml-possibly-multiline-code-re
+  "\\(\\(?:.*?,\n\\)*.*\\)"
+  "Regexp to match trailing ruby code which may continue onto subsequent lines.")
+
 (defun haml-highlight-ruby-script (limit)
   "Highlight a Ruby script expression (-, =, or ~).
 LIMIT works as it does in `re-search-forward'."
-  (when (re-search-forward "^[ \t]*\\(-\\|[&!]?[=~]\\) \\(.*\\)$" limit t)
+  (when (re-search-forward (concat "^[ \t]*\\(-\\|[&!]?[=~]\\) "
+                                   haml-possibly-multiline-code-re)
+                           limit t)
     (haml-fontify-region-as-ruby (match-beginning 2) (match-end 2))))
 
 (defun haml-highlight-ruby-tag (limit)
@@ -304,7 +310,7 @@ For example, this will highlight all of the following:
     ;; Move past end chars
     (when (looking-at "[<>&!]+") (goto-char (match-end 0)))
     ;; Highlight script
-    (if (looking-at "\\([=~]\\) \\(.*\\)$")
+    (if (looking-at (concat "\\([=~]\\) " haml-possibly-multiline-code-re))
         (haml-fontify-region-as-ruby (match-beginning 2) (match-end 2))
       ;; Give font-lock something to highlight
       (forward-char -1)
