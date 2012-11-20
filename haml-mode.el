@@ -123,13 +123,15 @@ respectively."
             (font-lock-syntactic-keywords syntactic-keywords)
             (syntax-propertize-function syntax-propertize-fn)
             (font-lock-multiline 'undecided)
+            (font-lock-dont-widen t)
             font-lock-keywords-only
             font-lock-extend-region-functions
             font-lock-keywords-case-fold-search)
-        (setq syntax-ppss-last (cons beg (syntax-ppss beg)))
-        ;; font-lock-fontify-region apparently isn't inclusive,
-        ;; so we have to move the beginning back one char
-        (font-lock-fontify-region (- beg 1) end)))))
+        (save-restriction
+          (narrow-to-region (1- beg) end)
+          ;; font-lock-fontify-region apparently isn't inclusive,
+          ;; so we have to move the beginning back one char
+          (font-lock-fontify-region (- beg 1) end))))))
 
 (defun haml-fontify-region-as-ruby (beg end)
   "Use Ruby's font-lock variables to fontify the region between BEG and END."
