@@ -5,7 +5,7 @@
 ;; Author: Nathan Weizenbaum
 ;; URL: http://github.com/nex3/haml/tree/master
 ;; Package-Requires: ((ruby-mode "1.0"))
-;; Version: 3.0.15
+;; Version: DEV
 ;; Created: 2007-03-08
 ;; By: Nathan Weizenbaum
 ;; Keywords: markup, language, html
