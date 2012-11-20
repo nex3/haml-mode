@@ -99,7 +99,6 @@ The line containing RE is matched, as well as all lines indented beneath it."
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
     (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
     (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
-    (haml-highlight-interpolation         1 font-lock-variable-name-face prepend)
     (haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
     (haml-highlight-ruby-script           1 font-lock-preprocessor-face)
     ("^!!!.*"                             0 font-lock-constant-face)
@@ -304,21 +303,6 @@ Returns non-nil if the expression was sucessfully matched."
   (when (looking-at re)
     (goto-char (match-end 0))
     t))
-
-(defun haml-highlight-interpolation (limit)
-  "Highlight Ruby interpolation (#{foo}).
-LIMIT works as it does in `re-search-forward'."
-  (when (re-search-forward "\\(#{\\)" limit t)
-    (save-match-data
-      (forward-char -1)
-      (let ((beg (point)))
-        (haml-limited-forward-sexp limit)
-        (haml-fontify-region-as-ruby (+ 1 beg) (point)))
-
-      (when (eq (char-before) ?})
-        (put-text-property (- (point) 1) (point)
-                           'face font-lock-variable-name-face))
-      t)))
 
 (defun haml-limited-forward-sexp (limit &optional arg)
   "Move forward using `forward-sexp' or to LIMIT, whichever comes first.
