@@ -89,16 +89,16 @@ be matched by a regexp in this list.")
 (defun haml-nested-regexp (re)
   "Create a regexp to match a block starting with RE.
 The line containing RE is matched, as well as all lines indented beneath it."
-  (concat "^\\([ \t]*\\)" re "[ \t]*\\(\n\\(?:\\(?:\\1 .*\\| *\\)\n\\)*\\(?:\\1 .*\\| *\\)?\\)?"))
+  (concat "^\\([ \t]*\\)\\(" re "\\)[ \t]*\\(\\(?:\n\\1 +[^\n]*\\)*\\)"))
 
 (defconst haml-font-lock-keywords
-  `((,(haml-nested-regexp "\\(?:-#\\|/\\).*")  0 font-lock-comment-face)
-    (,(haml-nested-regexp ":\\w+") 0 font-lock-string-face)
-    (haml-highlight-ruby-filter-block     1 font-lock-preprocessor-face)
+  `((,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*")  0 font-lock-comment-face)
+    (haml-highlight-ruby-filter-block     0 font-lock-preprocessor-face)
     (haml-highlight-css-filter-block      1 font-lock-preprocessor-face)
     (haml-highlight-textile-filter-block  1 font-lock-preprocessor-face)
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
     (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
+    (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
     (haml-highlight-interpolation         1 font-lock-variable-name-face prepend)
     (haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
     (haml-highlight-ruby-script           1 font-lock-preprocessor-face)
@@ -146,7 +146,10 @@ respectively."
 FN is passed a pair of points representing the beginning and end
 of the filtered text."
   (when (re-search-forward (haml-nested-regexp (concat ":" filter-name)) limit t)
-    (funcall fn (+ 2 (match-beginning 2)) (match-end 2))))
+    ;; fontify the filter name
+    (put-text-property (match-beginning 2) (+ 1 (match-end 2))
+                       'face font-lock-preprocessor-face)
+    (funcall fn (+ 1 (match-beginning 3)) (match-end 3))))
 
 (defun haml-fontify-filter-region
   (filter-name limit keywords syntax-table syntactic-keywords syntax-propertize-fn)
