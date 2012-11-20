@@ -92,15 +92,15 @@ The line containing RE is matched, as well as all lines indented beneath it."
   (concat "^\\([ \t]*\\)\\(" re "\\)[ \t]*\\(\\(?:\n\\1 +[^\n]*\\)*\\)"))
 
 (defconst haml-font-lock-keywords
-  `((,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*")  0 font-lock-comment-face)
+  `((haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
+    (haml-highlight-ruby-script           1 font-lock-preprocessor-face)
+    (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*")  0 font-lock-comment-face)
     (haml-highlight-ruby-filter-block     0 font-lock-preprocessor-face)
     (haml-highlight-css-filter-block      1 font-lock-preprocessor-face)
     (haml-highlight-textile-filter-block  1 font-lock-preprocessor-face)
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
     (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
     (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
-    (haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
-    (haml-highlight-ruby-script           1 font-lock-preprocessor-face)
     ("^!!!.*"                             0 font-lock-constant-face)
     ("\\s| *$"                            0 font-lock-string-face)))
 
@@ -130,10 +130,24 @@ respectively."
         ;; so we have to move the beginning back one char
         (font-lock-fontify-region (- beg 1) end)))))
 
+(defvar haml-commentless-ruby-syntax-table
+  (let ((table (make-syntax-table ruby-font-lock-syntax-table)))
+    (modify-syntax-entry ?# "." table)
+    table)
+  "A version of `ruby-font-lock-syntax-table' with the comment entry removed.
+This is used for ruby regions on lines beginning with '#'.")
+
 (defun haml-fontify-region-as-ruby (beg end)
   "Use Ruby's font-lock variables to fontify the region between BEG and END."
   (haml-fontify-region beg end ruby-font-lock-keywords
-                       ruby-font-lock-syntax-table
+                       (if (save-excursion
+                             (goto-char beg)
+                             (beginning-of-line)
+                             (and (< (point) beg)
+                                  (string-match-p "^[ \t]*#"
+                                                  (buffer-substring-no-properties (point) beg))))
+                           haml-commentless-ruby-syntax-table
+                         ruby-font-lock-syntax-table)
                        (when (boundp 'ruby-font-lock-syntactic-keywords)
                          ruby-font-lock-syntactic-keywords)
                        (when (fboundp 'ruby-syntax-propertize-function)
