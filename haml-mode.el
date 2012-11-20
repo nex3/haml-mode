@@ -390,8 +390,11 @@ With ARG, do it that many times."
     (define-key map "\C-c\C-l" 'haml-output-buffer)
     map))
 
+(defalias 'haml-parent-mode
+  (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
+
 ;;;###autoload
-(define-derived-mode haml-mode fundamental-mode "Haml"
+(define-derived-mode haml-mode haml-parent-mode "Haml"
   "Major mode for editing Haml files.
 
 \\{haml-mode-map}"
