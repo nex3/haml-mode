@@ -220,7 +220,7 @@ This requires that `markdown-mode' be available."
                                   nil)))
 
 (defconst haml-possibly-multiline-code-re
-  "\\(\\(?:.*?,\n\\)*.*\\)"
+  "\\(\\(?:.*?[,{(\\[][ \t]*\n\\)*.*\\)"
   "Regexp to match trailing ruby code which may continue onto subsequent lines.")
 
 (defun haml-highlight-ruby-script (limit)
