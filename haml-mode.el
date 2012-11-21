@@ -89,18 +89,18 @@ be matched by a regexp in this list.")
 (defun haml-nested-regexp (re)
   "Create a regexp to match a block starting with RE.
 The line containing RE is matched, as well as all lines indented beneath it."
-  (concat "^\\([ \t]*\\)\\(" re "\\)[ \t]*\\(\\(?:\n\\1 +[^\n]*\\)*\\)"))
+  (concat "^\\([ \t]*\\)\\(" re "\\)[ \t]*\\(\\(?:\n\\1 +[^\n]*\\)*\n?\\)"))
 
 (defconst haml-font-lock-keywords
   `((haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
     (haml-highlight-ruby-script           1 font-lock-preprocessor-face)
-    (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*")  0 font-lock-comment-face)
-    (haml-highlight-ruby-filter-block     0 font-lock-preprocessor-face)
+    (haml-highlight-ruby-filter-block     1 font-lock-preprocessor-face)
     (haml-highlight-css-filter-block      1 font-lock-preprocessor-face)
     (haml-highlight-textile-filter-block  1 font-lock-preprocessor-face)
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
-    (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
+    (haml-highlight-js-filter-block       1 font-lock-preprocessor-face t)
     (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
+    (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0 font-lock-comment-face)
     ("^!!!.*"                             0 font-lock-constant-face)
     ("\\s| *$"                            0 font-lock-string-face)))
 
