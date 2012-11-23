@@ -92,14 +92,14 @@ The line containing RE is matched, as well as all lines indented beneath it."
   (concat "^\\([ \t]*\\)\\(" re "\\)\\([ \t]*\\(?:\n\\1 +[^\n]*\\)*\n?\\)"))
 
 (defconst haml-font-lock-keywords
-  `((haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
-    (haml-highlight-ruby-script           1 font-lock-preprocessor-face)
-    (haml-highlight-ruby-filter-block     1 font-lock-preprocessor-face)
-    (haml-highlight-css-filter-block      1 font-lock-preprocessor-face)
-    (haml-highlight-textile-filter-block  1 font-lock-preprocessor-face)
-    (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
-    (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
-    (haml-highlight-misc-filter-block     1 font-lock-preprocessor-face)
+  `(haml-highlight-ruby-tag
+    haml-highlight-ruby-script
+    haml-highlight-ruby-filter-block
+    haml-highlight-css-filter-block
+    haml-highlight-textile-filter-block
+    haml-highlight-markdown-filter-block
+    haml-highlight-js-filter-block
+    haml-highlight-misc-filter-block
     (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0
      (unless (get-text-property (match-beginning 0) 'filter)
        'font-lock-comment-face))
@@ -170,7 +170,6 @@ The fontification is done by passing the remaining args to
   (haml-handle-filter
    filter-name limit
    (lambda (beg end)
-     (message "Filter %s from %s to %s" filter-name beg end)
      (haml-fontify-region beg end keywords syntax-table
                           syntactic-keywords syntax-propertize-fn))))
 
