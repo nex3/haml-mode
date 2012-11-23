@@ -98,7 +98,7 @@ The line containing RE is matched, as well as all lines indented beneath it."
     (haml-highlight-css-filter-block      1 font-lock-preprocessor-face)
     (haml-highlight-textile-filter-block  1 font-lock-preprocessor-face)
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
-    (haml-highlight-js-filter-block       1 font-lock-preprocessor-face t)
+    (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
     (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
     (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0 font-lock-comment-face)
     ("^!!!.*"                             0 font-lock-constant-face)
