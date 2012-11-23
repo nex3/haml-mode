@@ -153,9 +153,10 @@ of the filtered text."
     ;; fontify the filter name
     (put-text-property (match-beginning 2) (1+ (match-end 2))
                        'face font-lock-preprocessor-face)
-    (put-text-property (1+ (match-beginning 3)) (match-end 3)
-                       'filter t)
-    (funcall fn (1+ (match-beginning 3)) (match-end 3))))
+    (let ((code-start (1+ (match-beginning 3)))
+          (code-end (match-end 3)))
+      (put-text-property code-start code-end 'filter t)
+      (funcall fn code-start code-end))))
 
 (defun haml-fontify-filter-region
   (filter-name limit keywords syntax-table syntactic-keywords syntax-propertize-fn)
