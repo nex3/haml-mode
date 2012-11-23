@@ -84,6 +84,7 @@ a specific level to which the current line could be indented.")
 That is, a Haml line that can have text nested beneath it should
 be matched by a regexp in this list.")
 
+
 ;; Font lock
 
 (defun haml-nested-regexp (re)
@@ -94,20 +95,24 @@ The line containing RE is matched, as well as all lines indented beneath it."
 (defconst haml-font-lock-keywords
   `((haml-highlight-ruby-tag 1 font-lock-preprocessor-face)
     (haml-highlight-ruby-script 1 font-lock-preprocessor-face)
-    haml-highlight-ruby-filter-block
-    haml-highlight-css-filter-block
-    haml-highlight-textile-filter-block
-    haml-highlight-markdown-filter-block
-    haml-highlight-js-filter-block
-    haml-highlight-misc-filter-block
-    (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0
-     (unless (get-text-property (match-beginning 0) 'filter)
-       'font-lock-comment-face))
+    haml-highlight-filter
+    haml-highlight-comment
     ("^!!!.*"                             0 font-lock-constant-face)
     ("\\s| *$"                            0 font-lock-string-face)))
 
+(defun haml-highlight-comment (limit)
+  "Highlight any -# or / comment found up to LIMIT."
+  (when (re-search-forward (haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*")
+                           limit t)
+    (let ((beg (match-beginning 0))
+          (end (match-end 0)))
+      (put-text-property beg end 'font-lock-face 'font-lock-comment-face)
+      (goto-char end))))
+
 (defconst haml-filter-re "^[ \t]*:\\w+")
 (defconst haml-comment-re "^[ \t]*\\(?:-\\#\\|/\\)")
+
+;; Fontifying sub-regions for other languages
 
 (defun haml-fontify-region
   (beg end keywords syntax-table syntactic-keywords syntax-propertize-fn)
@@ -144,64 +149,20 @@ respectively."
                        (when (fboundp 'ruby-syntax-propertize-function)
                          #'ruby-syntax-propertize-function)))
 
-(defun haml-handle-filter (filter-name-re limit fn)
-  "If a filter matching FILTER-NAME-RE is found within LIMIT, run FN on it.
-
-FN is passed a pair of points representing the beginning and end
-of the filtered text."
-  (when (and
-         (not (get-text-property (point) 'filter))
-         (re-search-forward (haml-nested-regexp (concat ":" filter-name-re))
-                            limit t))
-    ;; fontify the filter name
-    (put-text-property (match-beginning 2) (1+ (match-end 2))
-                       'font-lock-face font-lock-preprocessor-face)
-    (let ((code-start (1+ (match-beginning 3)))
-          (code-end (match-end 3)))
-      (put-text-property code-start code-end 'filter t)
-      (funcall fn code-start code-end))))
-
-(defun haml-fontify-filter-region
-  (filter-name limit keywords syntax-table syntactic-keywords syntax-propertize-fn)
-  "If a FILTER-NAME filter is found within LIMIT, fontify it.
-
-The fontification is done by passing the remaining args to
-`haml-fontify-region'."
-  (haml-handle-filter
-   filter-name limit
-   (lambda (beg end)
-     (haml-fontify-region beg end keywords syntax-table
-                          syntactic-keywords syntax-propertize-fn))))
-
-(defun haml-highlight-misc-filter-block (limit)
-  "If a misc :filter (e.g. :plain) is found within LIMIT, highlight it."
-  (haml-handle-filter
-   (eval-when-compile
-     (regexp-opt
-      (mapcar 'symbol-name
-              '(cdata coffee erb escaped less maruku plain preserve sass scss))))
-   limit
-   (lambda (beg end)
-     (put-text-property beg end 'font-lock-face 'font-lock-string-face))))
-
-(defun haml-highlight-ruby-filter-block (limit)
-  "If a :ruby filter is found within LIMIT, highlight it."
-  (haml-handle-filter "ruby" limit 'haml-fontify-region-as-ruby))
-
-(defun haml-highlight-css-filter-block (limit)
-  "If a :css filter is found within LIMIT, highlight it.
+(defun haml-fontify-region-as-css (beg end)
+  "Fontify CSS code from BEG to END.
 
 This requires that `css-mode' is available.
 `css-mode' is included with Emacs 23."
   (if (boundp 'css-font-lock-keywords)
-      (haml-fontify-filter-region "css" limit
-                                  css-font-lock-keywords
-                                  css-mode-syntax-table
-                                  nil
-                                  nil)))
+      (haml-fontify-region beg end
+                           css-font-lock-keywords
+                           css-mode-syntax-table
+                           nil
+                           nil)))
 
-(defun haml-highlight-js-filter-block (limit)
-  "If a :javascript filter is found within LIMIT, highlight it.
+(defun haml-fontify-region-as-javascript (beg end)
+  "Fontify javascript code from BEG to END.
 
 This requires that Karl Landström's javascript mode be available, either as the
 \"js.el\" bundled with Emacs >= 23, or as \"javascript.el\" found in ELPA and
@@ -214,10 +175,10 @@ elsewhere."
     (when keywords
       (when (and (fboundp 'js--update-quick-match-re) (null js--quick-match-re-func))
         (js--update-quick-match-re))
-      (haml-fontify-filter-region "javascript" limit keywords syntax-table nil syntax-propertize))))
+      (haml-fontify-region beg end keywords syntax-table nil syntax-propertize))))
 
-(defun haml-highlight-textile-filter-block (limit)
-  "If a :textile filter is found within LIMIT, highlight it.
+(defun haml-fontify-region-as-textile (beg end)
+  "Highlight textile from BEG to END.
 
 This requires that `textile-mode' be available.
 
@@ -225,18 +186,48 @@ Note that the results are not perfect, since `textile-mode' expects
 certain constructs such as \"h1.\" to be at the beginning of a line,
 and indented Haml filters always have leading whitespace."
   (if (boundp 'textile-font-lock-keywords)
-      (haml-fontify-filter-region "textile" limit textile-font-lock-keywords nil nil nil)))
+      (haml-fontify-region beg end textile-font-lock-keywords nil nil nil)))
 
-(defun haml-highlight-markdown-filter-block (limit)
-  "If a :markdown filter is found within LIMIT, highlight it.
+(defun haml-fontify-region-as-markdown (beg end)
+  "Highlight markdown from BEG to END.
 
 This requires that `markdown-mode' be available."
   (if (boundp 'markdown-mode-font-lock-keywords)
-      (haml-fontify-filter-region "markdown" limit
-                                  markdown-mode-font-lock-keywords
-                                  markdown-mode-syntax-table
-                                  nil
-                                  nil)))
+      (haml-fontify-region beg end
+                           markdown-mode-font-lock-keywords
+                           markdown-mode-syntax-table
+                           nil
+                           nil)))
+
+(defvar haml-fontify-filter-functions-alist
+  '(("ruby"       . haml-fontify-region-as-ruby)
+    ("css"        . haml-fontify-region-as-css)
+    ("javascript" . haml-fontify-region-as-javascript)
+    ("textile"    . haml-fontify-region-as-textile)
+    ("markdown"   . haml-fontify-region-as-markdown))
+  "An alist of (FILTER-NAME . FUNCTION) used to fontify code regions.
+FILTER-NAME is a string and FUNCTION is a function which will be
+used to fontify the filter's indented code region.  FUNCTION will
+be passed the extents of that region in two arguments BEG and
+END.")
+
+(defun haml-highlight-filter (limit)
+  "Highlight and :filter region found in the text up to LIMIT."
+  (when (re-search-forward (haml-nested-regexp ":\\w+") limit t)
+    ;; fontify the filter name
+    (put-text-property (match-beginning 2) (1+ (match-end 2))
+                       'font-lock-face font-lock-preprocessor-face)
+    (let ((filter-name (substring (match-string 2) 1))
+          (code-start (1+ (match-beginning 3)))
+          (code-end (match-end 3)))
+      (save-match-data
+        (funcall (or (aget haml-fontify-filter-functions-alist filter-name)
+                     #'(lambda (beg end)
+                         (put-text-property beg end
+                                            'font-lock-face
+                                            'font-lock-string-face)))
+                 code-start code-end))
+      (goto-char (match-end 0)))))
 
 (defconst haml-possibly-multiline-code-re
   "\\(\\(?:.*?[,{(\\[][ \t]*\n\\)*.*\\)"
@@ -397,7 +388,7 @@ With ARG, do it that many times."
     (or (/= old-beg font-lock-beg)
         (/= old-end font-lock-end))))
 
-
+
 ;; Mode setup
 
 (defvar haml-mode-syntax-table
@@ -431,6 +422,7 @@ With ARG, do it that many times."
   (set-syntax-table haml-mode-syntax-table)
   (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-filters-comments)
   (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-multiline-hashes)
+  (set (make-local-variable 'jit-lock-contextually) t)
   (set (make-local-variable 'font-lock-multiline) t)
   (set (make-local-variable 'indent-line-function) 'haml-indent-line)
   (set (make-local-variable 'indent-region-function) 'haml-indent-region)
