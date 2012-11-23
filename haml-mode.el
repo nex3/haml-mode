@@ -133,7 +133,7 @@ respectively."
           (narrow-to-region (1- beg) end)
           ;; font-lock-fontify-region apparently isn't inclusive,
           ;; so we have to move the beginning back one char
-          (font-lock-fontify-region (- beg 1) end))))))
+          (font-lock-fontify-region (1- beg) end))))))
 
 (defun haml-fontify-region-as-ruby (beg end)
   "Use Ruby's font-lock variables to fontify the region between BEG and END."
@@ -298,7 +298,7 @@ For example, this will highlight all of the following:
                      (goto-char beg)
                      (haml-limited-forward-sexp eol))))
 
-               (haml-fontify-region-as-ruby (+ 1 beg) (point))))
+               (haml-fontify-region-as-ruby (1+ beg) (point))))
             (t (return-from loop))))))
 
     ;; Move past end chars
@@ -540,7 +540,7 @@ With ARG, do this that many times."
       (loop do (haml-forward-through-whitespace t)
             while (and (not (bobp))
                        (>= (current-indentation) indent)))
-      (setq arg (- arg 1))))
+      (setq arg (1- arg))))
   (back-to-indentation))
 
 (defun haml-down-list (&optional arg)
@@ -555,7 +555,7 @@ With ARG, do this that many times."
         (haml-forward-through-whitespace t)
         (back-to-indentation)
         (error "Nothing is nested beneath this line"))
-      (setq arg (- arg 1))))
+      (setq arg (1- arg))))
   (back-to-indentation))
 
 (defun haml-mark-sexp ()
@@ -605,7 +605,7 @@ beginning the hash."
       (beginning-of-line)
       (if (looking-at (concat haml-tag-beg-re "\\([{(]\\)"))
           (progn
-            (goto-char (- (match-end 0) 1))
+            (goto-char (1- (match-end 0)))
             (haml-limited-forward-sexp (save-excursion (end-of-line) (point)))
             (return-from haml-parse-multiline-attr-hash
               (when (or (string-equal (match-string 1) "(") (eq (char-before) ?,))
@@ -678,7 +678,7 @@ between possible indentations."
     (let (this-line-column current-column
           (next-line-column
            (if (and (equal last-command this-command) (/= (current-indentation) 0))
-               (* (/ (- (current-indentation) 1) haml-indent-offset) haml-indent-offset)
+               (* (/ (1- (current-indentation)) haml-indent-offset) haml-indent-offset)
              (car (haml-compute-indentation)))))
       (while (< (point) end)
         (setq this-line-column next-line-column
@@ -710,7 +710,7 @@ back-dent the line by `haml-indent-offset' spaces.  On reaching column
         (beginning-of-line)
         (delete-horizontal-space)
         (if (and (not strict) (equal last-command this-command) (/= ci 0))
-            (indent-to (* (/ (- ci 1) haml-indent-offset) haml-indent-offset))
+            (indent-to (* (/ (1- ci) haml-indent-offset) haml-indent-offset))
           (indent-to need))))
     (when (< (current-column) (current-indentation))
       (forward-to-indentation 0))))
