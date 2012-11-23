@@ -149,8 +149,10 @@ respectively."
 
 FN is passed a pair of points representing the beginning and end
 of the filtered text."
-  (when (re-search-forward (haml-nested-regexp (concat ":" filter-name-re))
-                           limit t)
+  (when (and
+         (not (get-text-property (point) 'filter))
+         (re-search-forward (haml-nested-regexp (concat ":" filter-name-re))
+                            limit t))
     ;; fontify the filter name
     (put-text-property (match-beginning 2) (1+ (match-end 2))
                        'font-lock-face font-lock-preprocessor-face)
