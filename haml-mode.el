@@ -99,6 +99,7 @@ The line containing RE is matched, as well as all lines indented beneath it."
     (haml-highlight-textile-filter-block  1 font-lock-preprocessor-face)
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
     (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
+    (haml-highlight-misc-filter-block     1 font-lock-preprocessor-face)
     (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
     (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0
      (unless (get-text-property (match-beginning 0) 'filter)
@@ -144,15 +145,16 @@ respectively."
                        (when (fboundp 'ruby-syntax-propertize-function)
                          #'ruby-syntax-propertize-function)))
 
-(defun haml-handle-filter (filter-name limit fn)
-  "If a FILTER-NAME filter is found within LIMIT, run FN on that filter.
+(defun haml-handle-filter (filter-name-re limit fn)
+  "If a filter matching FILTER-NAME-RE is found within LIMIT, run FN on it.
 
 FN is passed a pair of points representing the beginning and end
 of the filtered text."
-  (when (re-search-forward (haml-nested-regexp (concat ":" filter-name)) limit t)
+  (when (re-search-forward (haml-nested-regexp (concat ":" filter-name-re))
+                           limit t)
     ;; fontify the filter name
     (put-text-property (match-beginning 2) (1+ (match-end 2))
-                       'face font-lock-preprocessor-face)
+                       'font-lock-face font-lock-preprocessor-face)
     (let ((code-start (1+ (match-beginning 3)))
           (code-end (match-end 3)))
       (put-text-property code-start code-end 'filter t)
@@ -169,6 +171,12 @@ The fontification is done by passing the remaining args to
    (lambda (beg end)
      (haml-fontify-region beg end keywords syntax-table
                           syntactic-keywords syntax-propertize-fn))))
+
+(defun haml-highlight-misc-filter-block (limit)
+  "If a misc :filter (e.g. :plain) is found within LIMIT, highlight it."
+  (haml-handle-filter "\w+" limit
+   (lambda (beg end)
+     (put-text-property beg end 'font-lock-face 'font-lock-string-face))))
 
 (defun haml-highlight-ruby-filter-block (limit)
   "If a :ruby filter is found within LIMIT, highlight it."
@@ -253,7 +261,7 @@ For example, this will highlight all of the following:
 
     ;; Highlight tag, classes, and ids
     (while (haml-move "\\([.#%]\\)[a-z0-9_:\\-]*")
-      (put-text-property (match-beginning 0) (match-end 0) 'face
+      (put-text-property (match-beginning 0) (match-end 0) 'font-lock-face
                          (case (char-after (match-beginning 1))
                            (?% font-lock-function-name-face)
                            (?# font-lock-keyword-face)
@@ -275,7 +283,9 @@ For example, this will highlight all of the following:
                  (and (haml-parse-new-attr-hash
                        (lambda (type beg end)
                          (case type
-                           (name (put-text-property beg end 'face font-lock-constant-face))
+                           (name (put-text-property beg end
+                                                    'font-lock-face
+                                                    font-lock-constant-face))
                            (value (haml-fontify-region-as-ruby beg end)))))
                       (not (eobp)))
                (forward-line 1)
