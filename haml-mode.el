@@ -100,7 +100,9 @@ The line containing RE is matched, as well as all lines indented beneath it."
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
     (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
     (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
-    (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0 font-lock-comment-face)
+    (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0
+     (unless (get-text-property (match-beginning 0) 'filter)
+       'font-lock-comment-face))
     ("^!!!.*"                             0 font-lock-constant-face)
     ("\\s| *$"                            0 font-lock-string-face)))
 
@@ -149,9 +151,11 @@ FN is passed a pair of points representing the beginning and end
 of the filtered text."
   (when (re-search-forward (haml-nested-regexp (concat ":" filter-name)) limit t)
     ;; fontify the filter name
-    (put-text-property (match-beginning 2) (+ 1 (match-end 2))
+    (put-text-property (match-beginning 2) (1+ (match-end 2))
                        'face font-lock-preprocessor-face)
-    (funcall fn (+ 1 (match-beginning 3)) (match-end 3))))
+    (put-text-property (1+ (match-beginning 3)) (match-end 3)
+                       'filter t)
+    (funcall fn (1+ (match-beginning 3)) (match-end 3))))
 
 (defun haml-fontify-filter-region
   (filter-name limit keywords syntax-table syntactic-keywords syntax-propertize-fn)
