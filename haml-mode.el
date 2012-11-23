@@ -92,8 +92,8 @@ The line containing RE is matched, as well as all lines indented beneath it."
   (concat "^\\([ \t]*\\)\\(" re "\\)\\([ \t]*\\(?:\n\\1 +[^\n]*\\)*\n?\\)"))
 
 (defconst haml-font-lock-keywords
-  `(haml-highlight-ruby-tag
-    haml-highlight-ruby-script
+  `((haml-highlight-ruby-tag 1 font-lock-preprocessor-face)
+    (haml-highlight-ruby-script 1 font-lock-preprocessor-face)
     haml-highlight-ruby-filter-block
     haml-highlight-css-filter-block
     haml-highlight-textile-filter-block
@@ -175,7 +175,12 @@ The fontification is done by passing the remaining args to
 
 (defun haml-highlight-misc-filter-block (limit)
   "If a misc :filter (e.g. :plain) is found within LIMIT, highlight it."
-  (haml-handle-filter "\\\w+" limit
+  (haml-handle-filter
+   (eval-when-compile
+     (regexp-opt
+      (mapcar 'symbol-name
+              '(cdata coffee erb escaped less maruku plain preserve sass scss))))
+   limit
    (lambda (beg end)
      (put-text-property beg end 'font-lock-face 'font-lock-string-face))))
 
