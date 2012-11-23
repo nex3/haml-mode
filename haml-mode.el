@@ -100,7 +100,6 @@ The line containing RE is matched, as well as all lines indented beneath it."
     (haml-highlight-markdown-filter-block 1 font-lock-preprocessor-face)
     (haml-highlight-js-filter-block       1 font-lock-preprocessor-face)
     (haml-highlight-misc-filter-block     1 font-lock-preprocessor-face)
-    (,(haml-nested-regexp ":\\w+")        0 font-lock-string-face)
     (,(haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*") 0
      (unless (get-text-property (match-beginning 0) 'filter)
        'font-lock-comment-face))
@@ -169,12 +168,13 @@ The fontification is done by passing the remaining args to
   (haml-handle-filter
    filter-name limit
    (lambda (beg end)
+     (message "Filter %s from %s to %s" filter-name beg end)
      (haml-fontify-region beg end keywords syntax-table
                           syntactic-keywords syntax-propertize-fn))))
 
 (defun haml-highlight-misc-filter-block (limit)
   "If a misc :filter (e.g. :plain) is found within LIMIT, highlight it."
-  (haml-handle-filter "\w+" limit
+  (haml-handle-filter "\\\w+" limit
    (lambda (beg end)
      (put-text-property beg end 'font-lock-face 'font-lock-string-face))))
 
