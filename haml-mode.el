@@ -89,7 +89,7 @@ be matched by a regexp in this list.")
 (defun haml-nested-regexp (re)
   "Create a regexp to match a block starting with RE.
 The line containing RE is matched, as well as all lines indented beneath it."
-  (concat "^\\([ \t]*\\)\\(" re "\\)[ \t]*\\(\\(?:\n\\1 +[^\n]*\\)*\n?\\)"))
+  (concat "^\\([ \t]*\\)\\(" re "\\)\\([ \t]*\\(?:\n\\1 +[^\n]*\\)*\n?\\)"))
 
 (defconst haml-font-lock-keywords
   `((haml-highlight-ruby-tag              1 font-lock-preprocessor-face)
