@@ -100,17 +100,16 @@ The line containing RE is matched, as well as all lines indented beneath it."
     ("^!!!.*"                             0 font-lock-constant-face)
     ("\\s| *$"                            0 font-lock-string-face)))
 
+(defconst haml-filter-re (haml-nested-regexp ":\\w+"))
+(defconst haml-comment-re (haml-nested-regexp "\\(?:-\\#\\|/\\)[^\n]*"))
+
 (defun haml-highlight-comment (limit)
   "Highlight any -# or / comment found up to LIMIT."
-  (when (re-search-forward (haml-nested-regexp "\\(?:-#\\|/\\)[^\n]*")
-                           limit t)
+  (when (re-search-forward haml-comment-re limit t)
     (let ((beg (match-beginning 0))
           (end (match-end 0)))
       (put-text-property beg end 'font-lock-face 'font-lock-comment-face)
       (goto-char end))))
-
-(defconst haml-filter-re "^[ \t]*:\\w+")
-(defconst haml-comment-re "^[ \t]*\\(?:-\\#\\|/\\)")
 
 ;; Fontifying sub-regions for other languages
 
@@ -213,7 +212,7 @@ END.")
 
 (defun haml-highlight-filter (limit)
   "Highlight and :filter region found in the text up to LIMIT."
-  (when (re-search-forward (haml-nested-regexp ":\\w+") limit t)
+  (when (re-search-forward haml-filter-re limit t)
     ;; fontify the filter name
     (put-text-property (match-beginning 2) (1+ (match-end 2))
                        'font-lock-face font-lock-preprocessor-face)
