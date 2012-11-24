@@ -67,7 +67,7 @@ The function can also return a positive integer to indicate
 a specific level to which the current line could be indented.")
 
 (defconst haml-tag-beg-re
-  "^[ \t]*\\(?:[%\\.#][a-z0-9_:\\-]*\\)+\\(?:(.*)\\|{.*}\\|\\[.*\\]\\)*"
+  "^[ \t]*\\(?:[%\\.#][a-z0-9_:\\-]+\\)+\\(?:(.*)\\|{.*}\\|\\[.*\\]\\)*"
   "A regexp matching the beginning of a Haml tag, through (), {}, and [].")
 
 (defvar haml-block-openers
@@ -256,7 +256,7 @@ For example, this will highlight all of the following:
     (forward-char -1)
 
     ;; Highlight tag, classes, and ids
-    (while (haml-move "\\([.#%]\\)[a-z0-9_:\\-]*")
+    (while (haml-move "\\([.#%]\\)[a-z0-9_:\\-]+")
       (put-text-property (match-beginning 0) (match-end 0) 'font-lock-face
                          (case (char-after (match-beginning 1))
                            (?% font-lock-function-name-face)
