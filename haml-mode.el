@@ -211,7 +211,7 @@ be passed the extents of that region in two arguments BEG and
 END.")
 
 (defun haml-highlight-filter (limit)
-  "Highlight and :filter region found in the text up to LIMIT."
+  "Highlight any :filter region found in the text up to LIMIT."
   (when (re-search-forward haml-filter-re limit t)
     ;; fontify the filter name
     (put-text-property (match-beginning 2) (1+ (match-end 2))
