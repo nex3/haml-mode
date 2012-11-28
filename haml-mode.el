@@ -256,7 +256,7 @@ For example, this will highlight all of the following:
     (forward-char -1)
 
     ;; Highlight tag, classes, and ids
-    (while (haml-move "\\([.#%]\\)[a-z0-9_:\\-]+")
+    (while (haml-move "\\([.#%]\\)[a-z0-9_:\\-]*")
       (put-text-property (match-beginning 0) (match-end 0) 'font-lock-face
                          (case (char-after (match-beginning 1))
                            (?% font-lock-function-name-face)
