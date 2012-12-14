@@ -108,7 +108,7 @@ The line containing RE is matched, as well as all lines indented beneath it."
   (when (re-search-forward haml-comment-re limit t)
     (let ((beg (match-beginning 0))
           (end (match-end 0)))
-      (put-text-property beg end 'font-lock-face 'font-lock-comment-face)
+      (put-text-property beg end 'face 'font-lock-comment-face)
       (goto-char end))))
 
 ;; Fontifying sub-regions for other languages
@@ -215,7 +215,7 @@ END.")
   (when (re-search-forward haml-filter-re limit t)
     ;; fontify the filter name
     (put-text-property (match-beginning 2) (1+ (match-end 2))
-                       'font-lock-face font-lock-preprocessor-face)
+                       'face font-lock-preprocessor-face)
     (let ((filter-name (substring (match-string 2) 1))
           (code-start (1+ (match-beginning 3)))
           (code-end (match-end 3)))
@@ -223,7 +223,7 @@ END.")
         (funcall (or (aget haml-fontify-filter-functions-alist filter-name)
                      #'(lambda (beg end)
                          (put-text-property beg end
-                                            'font-lock-face
+                                            'face
                                             'font-lock-string-face)))
                  code-start code-end))
       (goto-char (match-end 0)))))
@@ -257,7 +257,7 @@ For example, this will highlight all of the following:
 
     ;; Highlight tag, classes, and ids
     (while (haml-move "\\([.#%]\\)[a-z0-9_:\\-]*")
-      (put-text-property (match-beginning 0) (match-end 0) 'font-lock-face
+      (put-text-property (match-beginning 0) (match-end 0) 'face
                          (case (char-after (match-beginning 1))
                            (?% font-lock-function-name-face)
                            (?# font-lock-keyword-face)
@@ -280,7 +280,7 @@ For example, this will highlight all of the following:
                        (lambda (type beg end)
                          (case type
                            (name (put-text-property beg end
-                                                    'font-lock-face
+                                                    'face
                                                     font-lock-constant-face))
                            (value (haml-fontify-region-as-ruby beg end)))))
                       (not (eobp)))
