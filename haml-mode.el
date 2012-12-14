@@ -95,8 +95,8 @@ The line containing RE is matched, as well as all lines indented beneath it."
 (defconst haml-font-lock-keywords
   `((haml-highlight-ruby-tag 1 font-lock-preprocessor-face)
     (haml-highlight-ruby-script 1 font-lock-preprocessor-face)
-    haml-highlight-filter
     haml-highlight-comment
+    haml-highlight-filter
     ("^!!!.*"                             0 font-lock-constant-face)
     ("\\s| *$"                            0 font-lock-string-face)))
 
@@ -337,22 +337,52 @@ With ARG, do it that many times."
          (signal 'scan-error (cdr err)))
        (goto-char limit)))))
 
-(defun* haml-extend-region-filters-comments ()
-  "Extend the font-lock region to encompass filters and comments."
+(defun haml-back-scan (re)
+  "Like re-search-backward, but match for RE can extend beyond point."
+  (beginning-of-line)
+  (or (looking-at re)
+      (when (re-search-backward re nil t)
+        (looking-at re))))
+
+(defun haml-find-containing-filter-or-comment ()
+  (save-excursion
+    (let ((pos (point))
+          start end)
+     (when (and
+            (or (haml-back-scan haml-filter-re)
+                (haml-back-scan haml-comment-re))
+            (< pos (match-end 0)))
+       (setq start (match-beginning 0)
+             end (match-end 0)))
+     (when start
+       (cons start end)))))
+
+(defun haml-extend-region-nested-below ()
+  "Extend the font-lock region to any subsequent indented lines."
   (let ((old-beg font-lock-beg)
         (old-end font-lock-end))
     (save-excursion
       (goto-char font-lock-beg)
       (beginning-of-line)
-      (unless (or (looking-at haml-filter-re)
-                  (looking-at haml-comment-re))
-        (return-from haml-extend-region-filters-comments))
-      (setq font-lock-beg (point))
-      (haml-forward-sexp)
-      (beginning-of-line)
-      (setq font-lock-end (max font-lock-end (point))))
+      (when (looking-at (haml-nested-regexp "[^ \t].*"))
+        (setq font-lock-beg (match-beginning 0)
+              font-lock-end (max font-lock-end (match-end 0)))))
     (or (/= old-beg font-lock-beg)
         (/= old-end font-lock-end))))
+
+(defun haml-extend-region-filters-comments ()
+  "Extend the font-lock region to encompass filters and comments."
+  (let ((old-beg font-lock-beg)
+        (old-end font-lock-end))
+    (save-excursion
+      (goto-char font-lock-beg)
+      (let ((container
+             (haml-find-containing-filter-or-comment)))
+        (when container
+          (setq font-lock-beg (car container)
+                font-lock-end (max font-lock-end (cdr container)))))
+      (or (/= old-beg font-lock-beg)
+          (/= old-end font-lock-end)))))
 
 (defun* haml-extend-region-multiline-hashes ()
   "Extend the font-lock region to encompass multiline attribute hashes."
@@ -387,6 +417,19 @@ With ARG, do it that many times."
     (or (/= old-beg font-lock-beg)
         (/= old-end font-lock-end))))
 
+(defun haml-extend-region-contextual ()
+  "Extend the font lock region piecemeal.
+
+The result of calling this function repeatedly until it fails is
+that (FONT-LOCK-BEG . FONT-LOCK-END) will be the smallest
+possible region in which font-locking could be affected by
+changes in the initial region."
+  (or
+   (haml-extend-region-filters-comments)
+   (haml-extend-region-multiline-hashes)
+   (haml-extend-region-nested-below)
+   (font-lock-extend-region-multiline)))
+
 
 ;; Mode setup
 
@@ -419,8 +462,7 @@ With ARG, do it that many times."
 
 \\{haml-mode-map}"
   (set-syntax-table haml-mode-syntax-table)
-  (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-filters-comments)
-  (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-multiline-hashes)
+  (setq font-lock-extend-region-functions '(haml-extend-region-contextual))
   (set (make-local-variable 'jit-lock-contextually) t)
   (set (make-local-variable 'font-lock-multiline) t)
   (set (make-local-variable 'indent-line-function) 'haml-indent-line)
