@@ -156,7 +156,7 @@ respectively."
 
 This requires that `css-mode' is available.
 `css-mode' is included with Emacs 23."
-  (if (boundp 'css-font-lock-keywords)
+  (when (boundp 'css-font-lock-keywords)
       (haml-fontify-region beg end
                            css-font-lock-keywords
                            css-mode-syntax-table
