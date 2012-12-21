@@ -337,9 +337,9 @@ LIMIT works as it does in `re-search-forward'."
       (forward-char -1)
       (let ((beg (point)))
         (haml-limited-forward-sexp limit)
-        (haml-fontify-region-as-ruby (+ 1 beg) (point)))
+        (haml-fontify-region-as-ruby (1+ beg) (point)))
       (when (eq (char-before) ?\})
-        (put-text-property (- (point) 1) (point)
+        (put-text-property (1- (point)) (point)
                            'face font-lock-variable-name-face))
       t)))
 
