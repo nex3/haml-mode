@@ -356,25 +356,21 @@ With ARG, do it that many times."
          (signal 'scan-error (cdr err)))
        (goto-char limit)))))
 
-(defun haml-back-scan (re)
-  "Like re-search-backward, but match for RE can extend beyond point."
-  (beginning-of-line)
-  (or (looking-at re)
-      (when (re-search-backward re nil t)
-        (looking-at re))))
-
 (defun haml-find-containing-block (re)
   "If point is inside a block matching RE, return (start . end) for the block."
   (save-excursion
     (let ((pos (point))
           start end)
-     (when (and
-            (haml-back-scan re)
-            (< pos (match-end 0)))
-       (setq start (match-beginning 0)
-             end (match-end 0)))
-     (when start
-       (cons start end)))))
+      (beginning-of-line)
+      (when (and
+             (or (looking-at re)
+                 (when (re-search-backward re nil t)
+                   (looking-at re)))
+             (< pos (match-end 0)))
+        (setq start (match-beginning 0)
+              end (match-end 0)))
+      (when start
+        (cons start end)))))
 
 (defun haml-maybe-extend-region (extender)
   "Maybe extend the font lock region using EXTENDER.
