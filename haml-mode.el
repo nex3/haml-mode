@@ -235,12 +235,14 @@ END.")
   "\\(\\(?:.*?[,{(\\[][ \t]*\n\\)*.*\\)"
   "Regexp to match trailing ruby code which may continue onto subsequent lines.")
 
+(defconst haml-ruby-script-re
+  (concat "^[ \t]*\\(-\\|[&!]?[=~]\\) " haml-possibly-multiline-code-re)
+  "Regexp to match -, = or ~ blocks and any continued code lines.")
+
 (defun haml-highlight-ruby-script (limit)
   "Highlight a Ruby script expression (-, =, or ~).
 LIMIT works as it does in `re-search-forward'."
-  (when (re-search-forward (concat "^[ \t]*\\(-\\|[&!]?[=~]\\) "
-                                   haml-possibly-multiline-code-re)
-                           limit t)
+  (when (re-search-forward haml-ruby-script-re limit t)
     (haml-fontify-region-as-ruby (match-beginning 2) (match-end 2))))
 
 (defun haml-highlight-ruby-tag (limit)
