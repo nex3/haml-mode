@@ -245,6 +245,13 @@ LIMIT works as it does in `re-search-forward'."
   (when (re-search-forward haml-ruby-script-re limit t)
     (haml-fontify-region-as-ruby (match-beginning 2) (match-end 2))))
 
+(defun haml-move (re)
+  "Try matching and moving to the end of regular expression RE.
+Returns non-nil if the expression was sucessfully matched."
+  (when (looking-at re)
+    (goto-char (match-end 0))
+    t))
+
 (defun haml-highlight-ruby-tag (limit)
   "Highlight Ruby code within a Haml tag.
 LIMIT works as it does in `re-search-forward'.
@@ -313,20 +320,13 @@ For example, this will highlight all of the following:
             (t (return-from loop))))))
 
     ;; Move past end chars
-    (when (looking-at "[<>&!]+") (goto-char (match-end 0)))
+    (haml-move "[<>&!]+")
     ;; Highlight script
     (if (looking-at (concat "\\([=~]\\) " haml-possibly-multiline-code-re))
         (haml-fontify-region-as-ruby (match-beginning 2) (match-end 2))
       ;; Give font-lock something to highlight
       (forward-char -1)
       (looking-at "\\(\\)"))
-    t))
-
-(defun haml-move (re)
-  "Try matching and moving to the end of regular expression RE.
-Returns non-nil if the expression was sucessfully matched."
-  (when (looking-at re)
-    (goto-char (match-end 0))
     t))
 
 (defun haml-highlight-interpolation (limit)
