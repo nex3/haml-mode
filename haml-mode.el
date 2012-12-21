@@ -232,7 +232,7 @@ END.")
       (goto-char (match-end 0)))))
 
 (defconst haml-possibly-multiline-code-re
-  "\\(\\(?:.*?[,{(\\[][ \t]*\n\\)*.*\\)"
+  "\\(\\(?:.*?,[ \t]*\n\\)*.*\\)"
   "Regexp to match trailing ruby code which may continue onto subsequent lines.")
 
 (defconst haml-ruby-script-re
