@@ -363,45 +363,60 @@ With ARG, do it that many times."
       (when (re-search-backward re nil t)
         (looking-at re))))
 
-(defun haml-find-containing-filter-or-comment ()
+(defun haml-find-containing-block (re)
+  "If point is inside a block matching RE, return (start . end) for the block."
   (save-excursion
     (let ((pos (point))
           start end)
      (when (and
-            (or (haml-back-scan haml-filter-re)
-                (haml-back-scan haml-comment-re))
+            (haml-back-scan re)
             (< pos (match-end 0)))
        (setq start (match-beginning 0)
              end (match-end 0)))
      (when start
        (cons start end)))))
 
-(defun haml-extend-region-nested-below ()
-  "Extend the font-lock region to any subsequent indented lines."
+(defun haml-maybe-extend-region (extender)
+  "Maybe extend the font lock region using EXTENDER.
+With point at the beginning of the font lock region, EXTENDER is called.
+If it returns a (START . END) pair, those positions are used to possibly
+extend the font lock region."
   (let ((old-beg font-lock-beg)
         (old-end font-lock-end))
     (save-excursion
       (goto-char font-lock-beg)
-      (beginning-of-line)
-      (when (looking-at (haml-nested-regexp "[^ \t].*"))
-        (setq font-lock-beg (match-beginning 0)
-              font-lock-end (max font-lock-end (match-end 0)))))
+      (let ((new-bounds (funcall extender)))
+        (when new-bounds
+          (setq font-lock-beg (min font-lock-beg (car new-bounds))
+                font-lock-end (max font-lock-end (cdr new-bounds))))))
     (or (/= old-beg font-lock-beg)
         (/= old-end font-lock-end))))
 
-(defun haml-extend-region-filters-comments ()
-  "Extend the font-lock region to encompass filters and comments."
-  (let ((old-beg font-lock-beg)
-        (old-end font-lock-end))
-    (save-excursion
-      (goto-char font-lock-beg)
-      (let ((container
-             (haml-find-containing-filter-or-comment)))
-        (when container
-          (setq font-lock-beg (car container)
-                font-lock-end (max font-lock-end (cdr container)))))
-      (or (/= old-beg font-lock-beg)
-          (/= old-end font-lock-end)))))
+(defun haml-extend-region-nested-below ()
+  "Extend the font-lock region to any subsequent indented lines."
+  (haml-maybe-extend-region
+   (lambda ()
+     (beginning-of-line)
+     (when (looking-at (haml-nested-regexp "[^ \t].*"))
+       (cons (match-beginning 0) (match-end 0))))))
+
+(defun haml-extend-region-to-containing-block (re)
+  "Extend the font-lock region to the smallest containing block matching RE."
+  (haml-maybe-extend-region
+   (lambda ()
+     (haml-find-containing-block re))))
+
+(defun haml-extend-region-filter ()
+  "Extend the font-lock region to an enclosing filter."
+  (haml-extend-region-to-containing-block haml-filter-re))
+
+(defun haml-extend-region-comment ()
+  "Extend the font-lock region to an enclosing comment."
+  (haml-extend-region-to-containing-block haml-comment-re))
+
+(defun haml-extend-region-ruby-script ()
+  "Extend the font-lock region to encompass any current -/=/~ line."
+  (haml-extend-region-to-containing-block haml-ruby-script-re))
 
 (defun* haml-extend-region-multiline-hashes ()
   "Extend the font-lock region to encompass multiline attribute hashes."
@@ -439,12 +454,15 @@ With ARG, do it that many times."
 (defun haml-extend-region-contextual ()
   "Extend the font lock region piecemeal.
 
-The result of calling this function repeatedly until it fails is
-that (FONT-LOCK-BEG . FONT-LOCK-END) will be the smallest
+The result of calling this function repeatedly until it returns
+nil is that (FONT-LOCK-BEG . FONT-LOCK-END) will be the smallest
 possible region in which font-locking could be affected by
 changes in the initial region."
+  (message "Extending (%s . %s)" font-lock-beg font-lock-end)
   (or
-   (haml-extend-region-filters-comments)
+   (haml-extend-region-filter)
+   (haml-extend-region-comment)
+   (haml-extend-region-ruby-script)
    (haml-extend-region-multiline-hashes)
    (haml-extend-region-nested-below)
    (font-lock-extend-region-multiline)))
