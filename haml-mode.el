@@ -454,7 +454,6 @@ The result of calling this function repeatedly until it returns
 nil is that (FONT-LOCK-BEG . FONT-LOCK-END) will be the smallest
 possible region in which font-locking could be affected by
 changes in the initial region."
-  (message "Extending (%s . %s)" font-lock-beg font-lock-end)
   (or
    (haml-extend-region-filter)
    (haml-extend-region-comment)
