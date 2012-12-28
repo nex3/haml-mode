@@ -414,38 +414,35 @@ extend the font lock region."
   "Extend the font-lock region to encompass any current -/=/~ line."
   (haml-extend-region-to-containing-block haml-ruby-script-re))
 
-(defun* haml-extend-region-multiline-hashes ()
+(defun haml-extend-region-multiline-hashes ()
   "Extend the font-lock region to encompass multiline attribute hashes."
-  (let ((old-beg font-lock-beg)
-        (old-end font-lock-end))
-    (save-excursion
-      (goto-char font-lock-beg)
-      (let ((attr-props (haml-parse-multiline-attr-hash))
-            multiline-end)
-        (when attr-props
-          (setq font-lock-beg (cdr (assq 'point attr-props)))
+  (haml-maybe-extend-region
+   (lambda ()
+     (let ((attr-props (haml-parse-multiline-attr-hash))
+           multiline-end
+           start)
+       (when attr-props
+         (setq start (cdr (assq 'point attr-props)))
 
-          (end-of-line)
-          ;; Move through multiline attrs
-          (when (eq (char-before) ?,)
-            (save-excursion
-              (while (progn (end-of-line)
-                            (and (eq (char-before) ?,) (not (eobp))))
-                (forward-line))
+         (end-of-line)
+         ;; Move through multiline attrs
+         (when (eq (char-before) ?,)
+           (save-excursion
+             (while (progn (end-of-line)
+                           (and (eq (char-before) ?,) (not (eobp))))
+               (forward-line))
 
-              (forward-line -1)
-              (end-of-line)
-              (setq multiline-end (point))))
+             (forward-line -1)
+             (end-of-line)
+             (setq multiline-end (point))))
 
-          (goto-char (+ (cdr (assq 'point attr-props))
-                        (cdr (assq 'hash-indent attr-props))
-                        -1))
-          (haml-limited-forward-sexp
-           (or multiline-end
-               (save-excursion (end-of-line) (point))))
-          (setq font-lock-end (max font-lock-end (point))))))
-    (or (/= old-beg font-lock-beg)
-        (/= old-end font-lock-end))))
+         (goto-char (+ (cdr (assq 'point attr-props))
+                       (cdr (assq 'hash-indent attr-props))
+                       -1))
+         (haml-limited-forward-sexp
+          (or multiline-end
+              (save-excursion (end-of-line) (point))))
+         (cons start (point)))))))
 
 (defun haml-extend-region-contextual ()
   "Extend the font lock region piecemeal.
