@@ -466,6 +466,7 @@ changes in the initial region."
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?: "." table)
     (modify-syntax-entry ?_ "w" table)
+    (modify-syntax-entry ?' "\"" table)
     table)
   "Syntax table in use in `haml-mode' buffers.")
 
