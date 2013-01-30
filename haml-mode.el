@@ -282,6 +282,7 @@ For example, this will highlight all of the following:
           (case (char-after)
             ;; Highlight obj refs
             (?\[
+             (forward-char 1)
              (let ((beg (point)))
                (haml-limited-forward-sexp eol)
                (haml-fontify-region-as-ruby beg (point))))
