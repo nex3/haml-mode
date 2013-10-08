@@ -723,7 +723,7 @@ and BEG and END delimit that text in the buffer."
       (haml-move "[ \t]*")
       (when (haml-move "=")
         (haml-move "[ \t]*")
-        (unless (looking-at "[\"'@a-z]") (return-from haml-parse-new-attr-hash))
+        (unless (looking-at "[\"'@a-z0-9]") (return-from haml-parse-new-attr-hash))
         (let ((beg (point)))
           (haml-limited-forward-sexp eol)
           (funcall fn 'value beg (point)))
