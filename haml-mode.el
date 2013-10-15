@@ -224,7 +224,7 @@ END.")
           (code-start (1+ (match-beginning 3)))
           (code-end (match-end 3)))
       (save-match-data
-        (funcall (or (aget haml-fontify-filter-functions-alist filter-name)
+        (funcall (or (cdr (assoc filter-name haml-fontify-filter-functions-alist))
                      #'(lambda (beg end)
                          (put-text-property beg end
                                             'face
