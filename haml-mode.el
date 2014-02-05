@@ -68,7 +68,7 @@ The function can also return a positive integer to indicate
 a specific level to which the current line could be indented.")
 
 (defconst haml-tag-beg-re
-  "^[ \t]*\\(?:[%\\.#][a-z0-9_:\\-]+\\)+\\(?:(.*)\\|{.*}\\|\\[.*\\]\\)*"
+  "^[ \t]*\\([%\\.#][a-z0-9_:\\-]+\\)+\\(?:(.*)\\|{.*}\\|\\[.*\\]\\)*"
   "A regexp matching the beginning of a Haml tag, through (), {}, and [].")
 
 (defvar haml-block-openers
@@ -659,16 +659,36 @@ the first non-whitespace character of the next line."
 
 ;; Indentation and electric keys
 
-(defun* haml-indent-p ()
-  "Returns t if the current line can have lines nested beneath it."
+(defvar haml-empty-elements
+  '("area" "base" "br" "col" "command" "embed" "hr" "img" "input"
+    "keygen" "link" "meta" "param" "source" "track" "wbr")
+  "A list of html elements which may not contain content.
+
+See http://www.w3.org/TR/html-markup/syntax.html.")
+
+(defun haml-unnestable-tag-p ()
+  "Return t if the current line is an empty element tag, or one with content."
+  (when (looking-at haml-tag-beg-re)
+    (save-excursion
+      (goto-char (match-end 0))
+      (or (string-match-p (concat "%" (regexp-opt haml-empty-elements) "\\b")
+                          (match-string 1))
+          (progn
+            (when (looking-at "[{(]")
+              (forward-sexp))
+            (looking-at "\\(?:=\\|==\\| \\)[[:blank:]]*[^[:blank:]\r\n]+"))))))
+
+(defun haml-indent-p ()
+  "Return t if the current line can have lines nested beneath it."
   (let ((attr-props (haml-parse-multiline-attr-hash)))
     (when attr-props
       (return-from haml-indent-p
         (if (haml-unclosed-attr-hash-p) (cdr (assq 'hash-indent attr-props))
           (list (+ (cdr (assq 'indent attr-props)) haml-indent-offset) nil)))))
-  (loop for opener in haml-block-openers
-        if (looking-at opener) return t
-        finally return nil))
+  (unless (or (haml-unnestable-tag-p))
+    (loop for opener in haml-block-openers
+          if (looking-at opener) return t
+          finally return nil)))
 
 (defun* haml-parse-multiline-attr-hash ()
   "Parses a multiline attribute hash, and returns
