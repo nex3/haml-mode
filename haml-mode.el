@@ -675,7 +675,7 @@ See http://www.w3.org/TR/html-markup/syntax.html.")
                           (match-string 1))
           (progn
             (when (looking-at "[{(]")
-              (forward-sexp))
+              (ignore-errors (forward-sexp)))
             (looking-at "\\(?:=\\|==\\| \\)[[:blank:]]*[^[:blank:]\r\n]+"))))))
 
 (defun haml-indent-p ()
