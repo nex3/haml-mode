@@ -15,7 +15,7 @@ Support for syntax checking via flymake is available separately: see
 
 If you're an Emacs 24 user or you have a recent version of
 `package.el` you can install `haml-mode` from the
-[MELPA](http://melpa.milkbox.net) or
+[MELPA](http://melpa.org) or
 [Marmalade](http://marmalade-repo.org) package repositories.
 
 ### Manually
