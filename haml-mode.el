@@ -237,7 +237,7 @@ END.")
   "Regexp to match trailing ruby code which may continue onto subsequent lines.")
 
 (defconst haml-ruby-script-re
-  (concat "^[ \t]*\\(-\\|[&!]?[=~]\\)" haml-possibly-multiline-code-re)
+  (concat "^[ \t]*\\(-\\|[&!]?\\(?:=[^=]\\|~\\)\\)" haml-possibly-multiline-code-re)
   "Regexp to match -, = or ~ blocks and any continued code lines.")
 
 (defun haml-highlight-ruby-script (limit)
