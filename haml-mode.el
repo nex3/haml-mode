@@ -502,6 +502,8 @@ changes in the initial region."
   (set (make-local-variable 'parse-sexp-lookup-properties) t)
   (set (make-local-variable 'comment-start) "-#")
   (setq font-lock-defaults '((haml-font-lock-keywords) t t))
+  (when (boundp 'electric-indent-inhibit)
+    (setq electric-indent-inhibit t))
   (setq indent-tabs-mode nil))
 
 ;; Useful functions
