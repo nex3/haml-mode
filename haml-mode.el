@@ -104,7 +104,7 @@ The line containing RE is matched, as well as all lines indented beneath it."
     ("^!!!.*"                             0 font-lock-constant-face)
     ("\\s| *$"                            0 font-lock-string-face)))
 
-(defconst haml-filter-re (haml-nested-regexp ":\\w+"))
+(defconst haml-filter-re (haml-nested-regexp ":[[:alnum:]_\\-]+"))
 (defconst haml-comment-re (haml-nested-regexp "\\(?:-\\#\\|/\\)[^\n]*"))
 
 (defun haml-highlight-comment (limit)
@@ -467,7 +467,6 @@ changes in the initial region."
 (defvar haml-mode-syntax-table
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?: "." table)
-    (modify-syntax-entry ?_ "w" table)
     (modify-syntax-entry ?' "\"" table)
     table)
   "Syntax table in use in `haml-mode' buffers.")
