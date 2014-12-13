@@ -492,7 +492,6 @@ changes in the initial region."
   "Major mode for editing Haml files.
 
 \\{haml-mode-map}"
-  (set-syntax-table haml-mode-syntax-table)
   (setq font-lock-extend-region-functions '(haml-extend-region-contextual))
   (set (make-local-variable 'jit-lock-contextually) t)
   (set (make-local-variable 'font-lock-multiline) t)
