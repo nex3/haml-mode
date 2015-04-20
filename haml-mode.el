@@ -681,14 +681,14 @@ See http://www.w3.org/TR/html-markup/syntax.html.")
 (defun haml-indent-p ()
   "Return t if the current line can have lines nested beneath it."
   (let ((attr-props (haml-parse-multiline-attr-hash)))
-    (when attr-props
-      (return-from haml-indent-p
-        (if (haml-unclosed-attr-hash-p) (cdr (assq 'hash-indent attr-props))
-          (list (+ (cdr (assq 'indent attr-props)) haml-indent-offset) nil)))))
-  (unless (or (haml-unnestable-tag-p))
-    (loop for opener in haml-block-openers
-          if (looking-at opener) return t
-          finally return nil)))
+    (if attr-props
+        (if (haml-unclosed-attr-hash-p)
+            (cdr (assq 'hash-indent attr-props))
+          (+ (cdr (assq 'indent attr-props)) haml-indent-offset))
+      (unless (or (haml-unnestable-tag-p))
+        (loop for opener in haml-block-openers
+              if (looking-at opener) return t
+              finally return nil)))))
 
 (defun* haml-parse-multiline-attr-hash ()
   "Parses a multiline attribute hash, and returns
