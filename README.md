@@ -40,7 +40,7 @@ used for `:markdown` and `:textile` blocks respectively.
 
 ## About
 
-Author: Nathan Weizenbaum
+Author: Natalie Weizenbaum
 
 Maintainer: [Steve Purcell](https://github.com/purcell) <steve at sanityinc dot com>
 
