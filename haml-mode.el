@@ -3,7 +3,7 @@
 ;; Copyright (c) 2007, 2008 Natalie Weizenbaum
 
 ;; Author: Natalie Weizenbaum
-;; URL: http://github.com/nex3/haml/tree/master
+;; URL: https://github.com/nex3/haml-mode
 ;; Package-Requires: ((ruby-mode "1.0"))
 ;; Version: DEV
 ;; Created: 2007-03-08
