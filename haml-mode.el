@@ -115,7 +115,7 @@ The line containing RE is matched, as well as all lines indented beneath it."
 ;; Fontifying sub-regions for other languages
 
 (defun haml-fontify-region
-    (beg end keywords syntax-table syntactic-keywords syntax-propertize-fn)
+    (beg end keywords syntax-table syntax-propertize-fn)
   "Fontify a region between BEG and END using another mode's fontification.
 
 KEYWORDS, SYNTAX-TABLE, SYNTACTIC-KEYWORDS and
@@ -127,7 +127,6 @@ respectively."
     (save-match-data
       (let ((font-lock-keywords keywords)
             (font-lock-syntax-table syntax-table)
-            (font-lock-syntactic-keywords syntactic-keywords)
             (syntax-propertize-function syntax-propertize-fn)
             (font-lock-multiline 'undecided)
             (font-lock-dont-widen t)
@@ -144,10 +143,9 @@ respectively."
   "Use Ruby's font-lock variables to fontify the region between BEG and END."
   (haml-fontify-region beg end ruby-font-lock-keywords
                        ruby-font-lock-syntax-table
-                       (when (boundp 'ruby-font-lock-syntactic-keywords)
-                         ruby-font-lock-syntactic-keywords)
-                       (when (fboundp 'ruby-syntax-propertize-function)
-                         #'ruby-syntax-propertize-function)))
+                       (if (fboundp 'ruby-syntax-propertize)
+                           'ruby-syntax-propertize
+                         'ruby-syntax-propertize-function)))
 
 (defun haml-fontify-region-as-css (beg end)
   "Fontify CSS code from BEG to END.
@@ -158,8 +156,7 @@ This requires that `css-mode' is available.
     (haml-fontify-region beg end
                          css-font-lock-keywords
                          css-mode-syntax-table
-                         nil
-                         nil)))
+                         'css-syntax-propertize-function)))
 
 (defun haml-fontify-region-as-javascript (beg end)
   "Fontify javascript code from BEG to END.
@@ -174,8 +171,7 @@ elsewhere."
     (haml-fontify-region beg end
                          js--font-lock-keywords-3
                          js-mode-syntax-table
-                         nil
-                         'js-syntax-propertize)))
+                         #'js-syntax-propertize)))
 
 (defun haml-fontify-region-as-textile (beg end)
   "Highlight textile from BEG to END.
@@ -186,7 +182,7 @@ Note that the results are not perfect, since `textile-mode' expects
 certain constructs such as \"h1.\" to be at the beginning of a line,
 and indented Haml filters always have leading whitespace."
   (if (boundp 'textile-font-lock-keywords)
-      (haml-fontify-region beg end textile-font-lock-keywords nil nil nil)))
+      (haml-fontify-region beg end textile-font-lock-keywords textile-mode-syntax-table nil)))
 
 (defun haml-fontify-region-as-markdown (beg end)
   "Highlight markdown from BEG to END.
@@ -196,7 +192,6 @@ This requires that `markdown-mode' be available."
       (haml-fontify-region beg end
                            markdown-mode-font-lock-keywords
                            markdown-mode-syntax-table
-                           nil
                            nil)))
 
 (defvar haml-fontify-filter-functions-alist
