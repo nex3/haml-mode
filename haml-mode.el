@@ -4,7 +4,6 @@
 
 ;; Author: Natalie Weizenbaum
 ;; URL: https://github.com/nex3/haml-mode
-;; Package-Requires: ((ruby-mode "1.0"))
 ;; Version: DEV
 ;; Created: 2007-03-08
 ;; By: Natalie Weizenbaum
