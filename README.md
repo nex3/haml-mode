@@ -6,17 +6,15 @@
 It provides syntax highlighting and support for syntax-aware
 indentation.
 
-Support for syntax checking via flymake is available separately: see
-[flymake-haml](https://github.com/purcell/flymake-haml).
+Support for syntax checking is built into [Flycheck](https://github.com/flycheck/flycheck).
+For `flymake`, see [flymake-haml](https://github.com/purcell/flymake-haml).
 
 ## Installation
 
 ### Via ELPA (recommended)
 
-If you're an Emacs 24 user or you have a recent version of
-`package.el` you can install `haml-mode` from the
-[MELPA](http://melpa.org) or
-[Marmalade](http://marmalade-repo.org) package repositories.
+You can install `haml-mode` from the
+[MELPA](http://melpa.org).
 
 ### Manually
 
@@ -26,9 +24,6 @@ add the following to your `~/.emacs` or `~/.emacs.d/init.el`:
 ``` lisp
 (require 'haml-mode)
 ```
-
-You will also need to ensure `ruby-mode` is installed: the version in
-Emacs 24 is sufficient.
 
 ## Optional functionality
 
