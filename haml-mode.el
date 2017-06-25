@@ -4,7 +4,7 @@
 
 ;; Author: Natalie Weizenbaum
 ;; URL: https://github.com/nex3/haml-mode
-;; Version: DEV
+;; Package-Version: 0
 ;; Created: 2007-03-08
 ;; By: Natalie Weizenbaum
 ;; Keywords: markup, language, html
