@@ -8,7 +8,7 @@
 ;; Package-Version: 0
 ;; Created: 2007-03-08
 ;; By: Natalie Weizenbaum
-;; Keywords: markup, language, html
+;; Keywords: markup, languages, html
 
 ;;; Commentary:
 
