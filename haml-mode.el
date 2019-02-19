@@ -142,7 +142,9 @@ respectively."
 (defun haml-fontify-region-as-ruby (beg end)
   "Use Ruby's font-lock variables to fontify the region between BEG and END."
   (haml-fontify-region beg end ruby-font-lock-keywords
-                       ruby-font-lock-syntax-table
+                       (if (boundp 'ruby-mode-syntax-table)
+                           ruby-mode-syntax-table
+                         ruby-font-lock-syntax-table)
                        (if (fboundp 'ruby-syntax-propertize)
                            'ruby-syntax-propertize
                          'ruby-syntax-propertize-function)))
