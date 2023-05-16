@@ -1,4 +1,4 @@
-;;; haml-mode.el --- Major mode for editing Haml files
+;;; haml-mode.el --- Major mode for editing Haml files -*- lexical-binding: t; -*-
 
 ;; Copyright (c) 2007, 2008 Natalie Weizenbaum
 
@@ -863,6 +863,86 @@ the current line."
 (defun haml-indent-string ()
   "Return the indentation string for `haml-indent-offset'."
   (mapconcat 'identity (make-list haml-indent-offset " ") ""))
+
+;; FLYMAKE via haml-lint
+
+(defcustom haml-lint-config ".haml-lint.yml"
+  "Configuration file for `haml-flymake-haml-lint'."
+  :type 'string
+  :group 'haml)
+
+(defcustom haml-lint-use-bundler nil
+  "If non-nil, run `haml-lint' with `bundle exec'."
+  :type 'boolean
+  :group 'haml)
+
+(defvar-local haml--flymake-proc nil
+  "Holds a reference to the haml flymake process.")
+
+(defun haml-flymake-haml-lint (report-fn &rest _args)
+  "Haml-lint backend for Flymake.
+REPORT-FN is the Flymake reporter callback."
+  (unless (executable-find "haml-lint")
+    (error "Cannot find the haml-lint executable"))
+
+  (let ((command (list "haml-lint" "-r" "json" buffer-file-name))
+        (default-directory default-directory)
+        config-dir)
+
+    (when buffer-file-name
+      (setq config-dir (locate-dominating-file buffer-file-name
+                                               haml-lint-config))
+        (when haml-lint-use-bundler
+          (setq command (append '("bundle" "exec") command))
+          ;; In case of a project with multiple nested subprojects,
+          ;; each one with a Gemfile.
+          (setq default-directory config-dir)))
+
+    (when (process-live-p haml--flymake-proc)
+      (kill-process haml--flymake-proc))
+
+    (let ((source (current-buffer)))
+      (save-restriction
+        (widen)
+	(setq
+	 haml--flymake-proc
+	 (make-process
+	  :name "haml-lint-flymake" :noquery t :connection-type 'pipe
+	  :buffer (generate-new-buffer " *haml-flymake*")
+	  :command command
+	  :sentinel
+	  (lambda (proc _event)
+	    (when (and (eq 'exit (process-status proc)) (buffer-live-p source))
+              (unwind-protect
+                  (if (with-current-buffer source (eq proc haml--flymake-proc))
+                      (with-current-buffer (process-buffer proc)
+                        (goto-char (point-max))
+		        (forward-line -1)
+			(beginning-of-line)
+			(let* ((data (json-read))
+			       (files (cdr (assoc 'files data))))
+			  (if (seq-empty-p files) (funcall report-fn nil)
+			    (cl-loop for offense across (cdr (assoc 'offenses (seq-first files)))
+				     for msg = (cdr (assoc 'message offense))
+				     for line = (cdr (assoc 'line (cdr (assoc 'location offense))))
+				     for (beg . end) = (flymake-diag-region source line)
+				     for severity = (cdr (assoc 'severity offense))
+				     for type = (or (intern-soft (format ":%s" severity)) :note)
+				     collect (flymake-make-diagnostic
+					      source
+					      beg
+					      end
+					      type
+					      msg)
+				     into diags
+				     finally (funcall report-fn diags)))))
+		    (flymake-log :debug "Canceling obsolete check %s" proc)))))))))))
+
+(defun haml-setup-flymake-backend ()
+  "Setup `haml-lint' flymake backend."
+  (add-hook 'flymake-diagnostic-functions 'haml-flymake-haml-lint nil t))
+
+(add-hook 'haml-mode-hook 'haml-setup-flymake-backend)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.haml\\'" . haml-mode))
