@@ -1,3 +1,5 @@
+[![MELPA Status](http://melpa.org/packages/haml-mode-badge.svg)](http://melpa.org/#/haml-mode)
+[![MELPA Stable Status](http://stable.melpa.org/packages/haml-mode-badge.svg)](http://stable.melpa.org/#/haml-mode)
 # haml-mode for Emacs
 
 `haml-mode` is an Emacs major mode for use with
