@@ -1,6 +1,6 @@
 [![MELPA Status](http://melpa.org/packages/haml-mode-badge.svg)](http://melpa.org/#/haml-mode)
 [![MELPA Stable Status](http://stable.melpa.org/packages/haml-mode-badge.svg)](http://stable.melpa.org/#/haml-mode)
-[![Build Status](https://github.com/nex3/haml-mode/workflows/CI/badge.svg)](https://github.com/nex3/haml-mode/actions)
+[![Build Status](https://github.com/nex3/haml-mode/actions/workflows/test.yml/badge.svg)](https://github.com/nex3/haml-mode/actions/workflows/test.yml)
 
 # haml-mode for Emacs
 
